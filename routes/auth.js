@@ -35,13 +35,14 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// ✅ Login Route: Email or Username
+// ✅ Login Route (Fixes empty/trimmed input edge case)
 router.post('/login', async (req, res) => {
   try {
-    // 🚨 DEBUG LOG — shows what the frontend is sending
+    // 🔍 DEBUG
     console.log("🚀 Incoming login data:", req.body);
 
-    const { identifier, password } = req.body;
+    const identifier = (req.body.identifier || "").trim();
+    const password = (req.body.password || "").trim();
 
     if (!identifier || !password) {
       return res.status(400).json({ message: 'Email/Username and password are required' });
