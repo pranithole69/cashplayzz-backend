@@ -1,40 +1,33 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const app = express();
 
-// ✅ Allow frontend origin
+// ✅ Middleware
 app.use(cors({
   origin: ["http://localhost:5173", "https://cashplayzz.surge.sh"],
   credentials: true
 }));
+app.use(express.json());
 
-// ✅ Body parsers
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// ✅ Log incoming requests (for debugging)
+// ✅ Debug logs for backend requests
 app.use((req, res, next) => {
   console.log(`🛬 ${req.method} ${req.originalUrl}`);
   console.log(`📦 Body:`, req.body);
   next();
 });
 
-// ✅ Environment
+// ✅ MongoDB connect
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
-
-// ✅ Connect to MongoDB
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,         // This is optional (deprecated warning)
-  useUnifiedTopology: true       // This is optional (deprecated warning)
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
 .then(() => console.log("✅ MongoDB connected"))
 .catch((err) => {
-  console.error("❌ MongoDB connection error:", err.message);
+  console.error("❌ MongoDB connection failed:", err);
   process.exit(1);
 });
 
@@ -47,10 +40,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 
-// ❌ REMOVE frontend serving code (client/dist) ❌
-// You are using Surge for frontend hosting so no need to serve HTML from backend.
+// ✅ Basic root route (optional)
+app.get("/", (req, res) => {
+  res.send("🚀 CashPlayzz Backend is Live!");
+});
 
-// ✅ Start the server
+// ✅ Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
