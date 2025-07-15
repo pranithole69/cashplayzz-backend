@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // ✅ Signup Route
@@ -12,59 +13,67 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check if email is already registered
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(400).json({ message: 'Email or username already registered' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
+      role: 'user'
     });
 
     await newUser.save();
     res.status(201).json({ message: 'Signup successful' });
-
   } catch (err) {
     console.error('Signup error:', err);
     res.status(500).json({ message: 'Signup failed. Please try again.' });
   }
 });
 
-// ✅ Login Route
+// ✅ Login Route: Email or Username
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    // 🚨 DEBUG LOG — shows what the frontend is sending
+    console.log("🚀 Incoming login data:", req.body);
 
-    // Debug: log input
-    console.log("Login request body:", req.body);
+    const { identifier, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+    if (!identifier || !password) {
+      return res.status(400).json({ message: 'Email/Username and password are required' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    });
+
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    const token = jwt.sign(
+      { id: user._id.toString(), role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.status(200).json({
       message: 'Login successful',
+      token,
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (err) {
