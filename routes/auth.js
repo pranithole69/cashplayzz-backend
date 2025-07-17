@@ -6,7 +6,7 @@ const User = require('../models/User');
 
 // ✅ Test Route - To check if backend auth route is working
 router.get('/test', (req, res) => {
-  res.send('✅ Auth route working!');
+  res.json({ success: true, message: "Backend is working fine!" });
 });
 
 // ✅ Signup Route
@@ -88,7 +88,3 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
-// Test route
-router.get('/test', (req, res) => {
-  res.json({ success: true, message: "Backend is working fine!" });
-});
