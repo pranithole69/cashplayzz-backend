@@ -35,10 +35,9 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// ✅ Login Route (Fixes empty/trimmed input edge case)
+// ✅ Login Route
 router.post('/login', async (req, res) => {
   try {
-    // 🔍 DEBUG
     console.log("🚀 Incoming login data:", req.body);
 
     const identifier = (req.body.identifier || "").trim();
@@ -81,6 +80,11 @@ router.post('/login', async (req, res) => {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Login failed. Please try again.' });
   }
+});
+
+// ✅ Test Route
+router.get('/test', (req, res) => {
+  res.send('✅ Auth route working!');
 });
 
 module.exports = router;
