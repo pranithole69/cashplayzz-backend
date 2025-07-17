@@ -4,6 +4,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// ✅ Test Route - To check if backend auth route is working
+router.get('/test', (req, res) => {
+  res.send('✅ Auth route working!');
+});
+
 // ✅ Signup Route
 router.post('/signup', async (req, res) => {
   try {
@@ -80,11 +85,6 @@ router.post('/login', async (req, res) => {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Login failed. Please try again.' });
   }
-});
-
-// ✅ Test Route
-router.get('/test', (req, res) => {
-  res.send('✅ Auth route working!');
 });
 
 module.exports = router;
