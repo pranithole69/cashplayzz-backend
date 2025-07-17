@@ -88,3 +88,7 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+// Test route
+router.get('/test', (req, res) => {
+  res.json({ success: true, message: "Backend is working fine!" });
+});
