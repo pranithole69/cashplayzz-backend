@@ -7,27 +7,25 @@ dotenv.config();
 
 const app = express();
 
-// ===== MIDDLEWARES =====
 app.use(cors());
 app.use(express.json());
 
-// ===== MONGODB CONNECTION =====
+// ✅ MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ===== API ROUTES =====
+// ✅ API routes only (NO frontend code)
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/user", require("./routes/user"));
 app.use("/api/admin", require("./routes/admin"));
 
-// ===== DEFAULT ROUTE =====
+// ✅ Basic root route (optional)
 app.get("/", (req, res) => {
-  res.send("✅ CashPlayzz backend is running!");
+  res.send("✅ CashPlayzz backend is running");
 });
 
-// ===== START SERVER =====
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`🚀 Server running on http://localhost:${PORT}`)
