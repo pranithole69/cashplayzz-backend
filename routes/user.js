@@ -4,25 +4,25 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 
-// ✅ GET user profile
+// ✅ GET USER PROFILE
 router.get('/profile', auth, async (req, res) => {
   try {
-    console.log("✅ Authenticated user:", req.user); // Log user from token
+    console.log("✅ Authenticated user from token:", req.user);
     const user = await User.findById(req.user._id).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    res.json({ user });
+    res.status(200).json({ user });
   } catch (err) {
-    console.error('Profile fetch error:', err);
+    console.error('❌ Profile fetch error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// ✅ POST deposit request
+// ✅ DEPOSIT ROUTE
 router.post('/deposit', auth, async (req, res) => {
-  const { amount, method, upiRef } = req.body;
+  const { amount, method, upiRef, senderName } = req.body;
 
-  if (!amount || !method || !upiRef) {
+  if (!amount || !method || !upiRef || !senderName) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
@@ -33,17 +33,18 @@ router.post('/deposit', auth, async (req, res) => {
       amount,
       method,
       upiRef,
+      senderName,
       status: 'pending',
     });
 
-    res.json({ message: 'Deposit request submitted.', tx });
+    res.status(200).json({ message: 'Deposit request submitted.', tx });
   } catch (err) {
-    console.error('Deposit error:', err);
+    console.error('❌ Deposit error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// ✅ POST withdraw request
+// ✅ WITHDRAW ROUTE
 router.post('/withdraw', auth, async (req, res) => {
   const { amount, upiRef } = req.body;
 
@@ -67,9 +68,9 @@ router.post('/withdraw', auth, async (req, res) => {
       status: 'pending',
     });
 
-    res.json({ message: 'Withdraw request submitted.', tx });
+    res.status(200).json({ message: 'Withdraw request submitted.', tx });
   } catch (err) {
-    console.error('Withdraw error:', err);
+    console.error('❌ Withdraw error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

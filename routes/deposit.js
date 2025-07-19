@@ -2,25 +2,10 @@
 const express = require("express");
 const router = express.Router();
 const Deposit = require("../models/Deposit");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User"); // if user model is used
+const authenticateUser = require("../middleware/auth"); // ✅ use this (your middleware file)
 
-// Middleware to verify JWT token
-const authenticateToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "Access token missing" });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(403).json({ message: "Invalid token" });
-  }
-};
-
-// POST /api/deposit
-router.post("/", authenticateToken, async (req, res) => {
+// POST /api/deposit (Authenticated)
+router.post("/", authenticateUser, async (req, res) => {
   const { amount, transactionId, senderName } = req.body;
 
   if (!amount || !transactionId || !senderName) {
@@ -29,10 +14,10 @@ router.post("/", authenticateToken, async (req, res) => {
 
   try {
     const deposit = new Deposit({
-      user: req.user.id,
+      user: req.user._id, // ✅ the id added by middleware
       amount,
       transactionId,
-      senderName
+      senderName,
     });
 
     await deposit.save();
