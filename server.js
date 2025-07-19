@@ -16,12 +16,15 @@ mongoose
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// API Routes Only (No frontend serving)
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/user", require("./routes/user"));
-app.use("/api/admin", require("./routes/admin"));
+// Log route loading
+console.log("Loading route files...");
 
-// Optional test route
+// API Routes Only (No frontend serving)
+app.use("/api/auth", require("./routes/auth")); // Make sure auth.js exists
+app.use("/api/user", require("./routes/user")); // User routes below
+app.use("/api/admin", require("./routes/admin")); // Make sure admin.js exists
+
+// Optional root test route
 app.get("/", (req, res) => {
   res.send("✅ CashPlayzz backend is running");
 });
