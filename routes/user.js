@@ -75,4 +75,9 @@ router.post('/withdraw', auth, async (req, res) => {
   }
 });
 
+// ✅ TEMPORARY TEST ROUTE
+router.get("/test", (req, res) => {
+  res.json({ message: "✅ /api/user/test route is working!" });
+});
+
 module.exports = router;
