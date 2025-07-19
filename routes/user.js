@@ -4,6 +4,11 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 
+// ✅ Test Route
+router.get("/test", (req, res) => {
+  res.json({ message: "✅ /api/user/test route is working!" });
+});
+
 // ✅ GET USER PROFILE
 router.get('/profile', auth, async (req, res) => {
   try {
@@ -73,11 +78,6 @@ router.post('/withdraw', auth, async (req, res) => {
     console.error('❌ Withdraw error:', err);
     res.status(500).json({ error: 'Server error' });
   }
-});
-
-// ✅ TEMPORARY TEST ROUTE
-router.get("/test", (req, res) => {
-  res.json({ message: "✅ /api/user/test route is working!" });
 });
 
 module.exports = router;
