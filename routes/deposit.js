@@ -1,12 +1,10 @@
-// server/routes/deposit.js
 const express = require("express");
 const router = express.Router();
 const Deposit = require("../models/Deposit");
 const User = require("../models/User");
-const auth = require("../middleware/auth");
+const { verifyToken } = require("../middleware/auth"); // ✅ fixed
 
-// POST /api/deposit - Submit deposit request
-router.post("/", auth, async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
   try {
     const { amount, transactionId, senderName } = req.body;
 
