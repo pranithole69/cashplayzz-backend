@@ -11,19 +11,19 @@ function isAdmin(req, res, next) {
 }
 
 // ✅ GET all deposit requests
-router.get('/deposits', auth, isAdmin, async (req, res) => {
+router.get('/deposits', auth.verifyToken, isAdmin, async (req, res) => {
   const deposits = await Transaction.find({ type: 'deposit' }).populate('userId');
   res.json(deposits);
 });
 
 // ✅ GET all withdrawal requests
-router.get('/withdrawals', auth, isAdmin, async (req, res) => {
+router.get('/withdrawals', auth.verifyToken, isAdmin, async (req, res) => {
   const withdrawals = await Transaction.find({ type: 'withdraw' }).populate('userId');
   res.json(withdrawals);
 });
 
-// ✅ Approve transaction (deposit or withdraw)
-router.put('/approve/:id', auth, isAdmin, async (req, res) => {
+// ✅ Approve transaction
+router.put('/approve/:id', auth.verifyToken, isAdmin, async (req, res) => {
   const tx = await Transaction.findById(req.params.id);
   if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid transaction' });
 
@@ -46,8 +46,8 @@ router.put('/approve/:id', auth, isAdmin, async (req, res) => {
   res.json({ message: `${tx.type} approved`, tx });
 });
 
-// ❌ Reject transaction
-router.put('/reject/:id', auth, isAdmin, async (req, res) => {
+// ✅ Reject transaction
+router.put('/reject/:id', auth.verifyToken, isAdmin, async (req, res) => {
   const tx = await Transaction.findById(req.params.id);
   if (!tx || tx.status !== 'pending') return res.status(400).json({ error: 'Invalid transaction' });
 
@@ -58,7 +58,7 @@ router.put('/reject/:id', auth, isAdmin, async (req, res) => {
 });
 
 // 📊 Stats
-router.get('/stats', auth, isAdmin, async (req, res) => {
+router.get('/stats', auth.verifyToken, isAdmin, async (req, res) => {
   const users = await User.find();
 
   let totalWagered = 0;

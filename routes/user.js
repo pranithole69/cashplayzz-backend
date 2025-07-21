@@ -3,7 +3,7 @@ const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
 const User = require('../models/User');
 
-// 🆕 ✅ GET /api/user/profile
+// ✅ GET /api/user/profile
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');

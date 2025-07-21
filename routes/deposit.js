@@ -2,29 +2,31 @@
 const express = require("express");
 const router = express.Router();
 const Deposit = require("../models/Deposit");
-const authenticateUser = require("../middleware/auth"); // ✅ use this (your middleware file)
+const User = require("../models/User");
+const auth = require("../middleware/auth");
 
-// POST /api/deposit (Authenticated)
-router.post("/", authenticateUser, async (req, res) => {
-  const { amount, transactionId, senderName } = req.body;
-
-  if (!amount || !transactionId || !senderName) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
+// POST /api/deposit - Submit deposit request
+router.post("/", auth, async (req, res) => {
   try {
-    const deposit = new Deposit({
-      user: req.user._id, // ✅ the id added by middleware
+    const { amount, transactionId, senderName } = req.body;
+
+    if (!amount || !transactionId || !senderName) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const newDeposit = new Deposit({
+      user: req.user.id,
       amount,
       transactionId,
       senderName,
     });
 
-    await deposit.save();
-    res.status(201).json({ message: "Deposit submitted", deposit });
+    await newDeposit.save();
+
+    res.status(201).json({ message: "Deposit request submitted", deposit: newDeposit });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Something went wrong" });
+    console.error("Deposit error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
