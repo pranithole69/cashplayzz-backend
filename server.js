@@ -3,35 +3,40 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
-// Load env variables
+// Load env variables from .env
 dotenv.config();
 
+// Initialize express app
 const app = express();
 
 // ===== Middlewares =====
 app.use(cors());
 app.use(express.json());
 
-// ===== Routes =====
+// ===== Basic Test Route =====
 app.get("/", (req, res) => {
-  res.send("CashPlayzz Backend Running");
+  res.send("💸 CashPlayzz Backend Running");
 });
 
+// ===== Main API Routes =====
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/user", require("./routes/user"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/deposit", require("./routes/deposit"));
-app.use("/api/test", require("./routes/test")); // ✅ Add test route here
-app.use("/api/withdraw", require("./routes/withdraw")); // ✅ Add withdraw route here
+app.use("/api/withdraw", require("./routes/withdraw"));
+app.use("/api/test", require("./routes/test")); // UptimeRobot or warmup route
 
 // ===== MongoDB Connection =====
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ===== Start Server =====
+// ===== Start the Server =====
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port http://localhost:${PORT}`);
 });
