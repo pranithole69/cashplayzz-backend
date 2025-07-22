@@ -22,6 +22,7 @@ app.use("/api/user", require("./routes/user"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/deposit", require("./routes/deposit"));
 app.use("/api/test", require("./routes/test")); // ✅ Add test route here
+app.use("/api/withdraw", require("./routes/withdraw")); // ✅ Add withdraw route here
 
 // ===== MongoDB Connection =====
 mongoose
