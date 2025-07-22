@@ -13,7 +13,7 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // contains { id, role }
+    req.user = decoded; // decoded = { id, role, iat, ... }
     next();
   } catch (err) {
     console.error("JWT Error:", err);
@@ -22,9 +22,12 @@ const verifyToken = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
+  console.log("ROLE COMING FROM TOKEN:", req.user.role); // 👈 This line is added
+
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied. Admins only." });
   }
+
   next();
 };
 

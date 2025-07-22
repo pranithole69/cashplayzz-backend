@@ -57,7 +57,7 @@ router.put('/reject/:id', auth.verifyToken, isAdmin, async (req, res) => {
   res.json({ message: `${tx.type} rejected`, tx });
 });
 
-// 📊 Stats
+// 📊 Main Admin Stats (with top winner & loser)
 router.get('/stats', auth.verifyToken, isAdmin, async (req, res) => {
   const users = await User.find();
 
@@ -80,6 +80,8 @@ router.get('/stats', auth.verifyToken, isAdmin, async (req, res) => {
     totalWagered,
     totalDeposits,
     totalWithdrawals,
+    profit: totalDeposits - totalWithdrawals,
+    totalUsers: users.length,
     topWinner: topWinner ? { username: topWinner.username, amount: topWinner.totalWin } : null,
     topLoser: topLoser ? { username: topLoser.username, amount: topLoser.totalLoss } : null,
   });
