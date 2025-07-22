@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Withdraw = require("../models/Withdraw");
-const authMiddleware = require("../middleware/auth");
+const { verifyToken } = require("../middleware/auth"); // ✅ Fixed
 
 // @route   POST /api/withdraw
 // @desc    Create a new withdraw request
 // @access  Private
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
   try {
     const { amount, upiId } = req.body;
 
