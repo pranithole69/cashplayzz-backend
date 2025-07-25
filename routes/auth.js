@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require("../models/User");
 
 // ✅ Test Route - To check if backend auth route is working
 router.get('/test', (req, res) => {

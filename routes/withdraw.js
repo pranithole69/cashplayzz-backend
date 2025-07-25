@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const { verifyToken } = require("../middleware/auth");
-const User = require("../models/User");
+const User = require("../models/User.js");
 const Withdraw = require("../models/Withdraw");
 
 // POST /api/withdraw

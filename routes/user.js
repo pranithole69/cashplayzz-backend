@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
-const User = require('../models/User');
+const User = require('../models/User.js');
 
 // GET /api/user/profile - Get user profile info
 router.get('/profile', verifyToken, async (req, res) => {

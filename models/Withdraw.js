@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const withdrawSchema = new mongoose.Schema({
-  userId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "User", // 👈 this enables .populate("user")
     required: true,
   },
   amount: {
@@ -16,7 +16,7 @@ const withdrawSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "pending", // can be 'pending', 'approved', 'rejected'
+    default: "pending", // pending | approved | rejected
   },
   createdAt: {
     type: Date,

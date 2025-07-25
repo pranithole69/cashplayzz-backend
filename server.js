@@ -10,7 +10,12 @@ dotenv.config();
 const app = express();
 
 // ===== Middlewares =====
-app.use(cors());
+// Allow only your frontend URL to access backend (CORS)
+app.use(cors({
+  origin: "https://cashplayzz.vercel.app",  // <-- Put your frontend URL here
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // ===== Basic Test Route =====
