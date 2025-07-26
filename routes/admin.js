@@ -12,13 +12,13 @@ function isAdmin(req, res, next) {
 
 // ✅ GET all deposit requests
 router.get('/deposits', auth.verifyToken, isAdmin, async (req, res) => {
-  const deposits = await Transaction.find({ type: 'deposit' }).populate('userId', 'username email');
+  const deposits = await Transaction.find({ type: 'deposit' }).populate('user', 'username email');
   res.json(deposits);
 });
 
 // ✅ GET all withdrawal requests
 router.get('/withdrawals', auth.verifyToken, isAdmin, async (req, res) => {
- const withdrawals = await Transaction.find({ type: 'withdraw' }).populate('userId', 'username email');
+ const withdrawals = await Transaction.find({ type: 'withdraw' }).populate('user', 'username email');
   res.json(withdrawals);
 });
 
