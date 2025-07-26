@@ -10,15 +10,15 @@ function isAdmin(req, res, next) {
   next();
 }
 
-// ✅ GET all deposit requests
+// ✅ GET all deposit requests (with username + email)
 router.get('/deposits', auth.verifyToken, isAdmin, async (req, res) => {
-  const deposits = await Transaction.find({ type: 'deposit' }).populate('user', 'username email');
+  const deposits = await Transaction.find({ type: 'deposit' }).populate('userId', 'username email');
   res.json(deposits);
 });
 
-// ✅ GET all withdrawal requests
+// ✅ GET all withdrawal requests (with username + email)
 router.get('/withdrawals', auth.verifyToken, isAdmin, async (req, res) => {
- const withdrawals = await Transaction.find({ type: 'withdraw' }).populate('user', 'username email');
+  const withdrawals = await Transaction.find({ type: 'withdraw' }).populate('userId', 'username email');
   res.json(withdrawals);
 });
 

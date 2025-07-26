@@ -1,9 +1,3 @@
-const express = require("express");
-const router = express.Router();
-const Deposit = require("../models/Deposit");
-const User = require("../models/User");
-const { verifyToken } = require("../middleware/auth"); // ✅ fixed
-
 router.post("/", verifyToken, async (req, res) => {
   try {
     const { amount, transactionId, senderName } = req.body;
@@ -21,11 +15,15 @@ router.post("/", verifyToken, async (req, res) => {
 
     await newDeposit.save();
 
-    res.status(201).json({ message: "Deposit request submitted", deposit: newDeposit });
+    // 👇 Populate user info (like username)
+    const populatedDeposit = await newDeposit.populate("user", "username");
+
+    res.status(201).json({
+      message: "Deposit request submitted",
+      deposit: populatedDeposit,
+    });
   } catch (err) {
     console.error("Deposit error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
-
-module.exports = router;
