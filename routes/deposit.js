@@ -1,3 +1,8 @@
+const express = require('express');
+const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
+const Deposit = require('../models/Deposit');
+
 router.post("/", verifyToken, async (req, res) => {
   try {
     const { amount, transactionId, senderName } = req.body;
@@ -15,10 +20,10 @@ router.post("/", verifyToken, async (req, res) => {
 
     await newDeposit.save();
 
-    // 👇 Populate user info (like username)
     const populatedDeposit = await newDeposit.populate("user", "username");
 
     res.status(201).json({
+      success: true,
       message: "Deposit request submitted",
       deposit: populatedDeposit,
     });
@@ -27,3 +32,5 @@ router.post("/", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+module.exports = router;
