@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const userTournamentsRouter = require('./routes/userTournaments');
 
 // Load environment variables from .env
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api/admin", require("./routes/admin"));
 app.use("/api/deposit", require("./routes/deposit"));
 app.use("/api/withdraw", require("./routes/withdraw"));
 app.use("/api/test", require("./routes/test")); // UptimeRobot or warmup route
+app.use('/api', userTournamentsRouter);
 
 // ===== MongoDB Connection =====
 mongoose
