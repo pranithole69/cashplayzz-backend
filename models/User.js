@@ -7,17 +7,17 @@ const UserSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
     },
     username: {
       type: String,
       required: true,
       unique: true,
-      trim: true
+      trim: true,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
 
     // 💰 Wallet and Stats
@@ -28,7 +28,10 @@ const UserSchema = new mongoose.Schema(
     totalWin: { type: Number, default: 0 },
     totalLoss: { type: Number, default: 0 },
 
-    role: { type: String, default: 'user' }
+    // New field to track joined tournaments
+    joinedMatches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' }],
+
+    role: { type: String, default: 'user' },
   },
   { timestamps: true }
 );
