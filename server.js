@@ -3,18 +3,18 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
-// Load env variables from .env
+// Load environment variables from .env
 dotenv.config();
 
-// Initialize express app
 const app = express();
 
 // ===== Middlewares =====
-// Allow only your frontend URL to access backend (CORS)
-app.use(cors({
-  origin: "https://cashplayzz.vercel.app",  // <-- Put your frontend URL here
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "https://cashplayzz.vercel.app", // <-- Your frontend URL here
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
@@ -23,9 +23,15 @@ app.get("/", (req, res) => {
   res.send("💸 CashPlayzz Backend Running");
 });
 
-// ===== Main API Routes =====
-app.use("/api/auth", require("./routes/auth"));
+// ===== Import Routes =====
+// Import join route first
+const joinRoute = require("./routes/join");
+app.use("/api/user", joinRoute); // Register join route BEFORE user routes
+
+// Now register general user routes
 app.use("/api/user", require("./routes/user"));
+
+app.use("/api/auth", require("./routes/auth"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/deposit", require("./routes/deposit"));
 app.use("/api/withdraw", require("./routes/withdraw"));
