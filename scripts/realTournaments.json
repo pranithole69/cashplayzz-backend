@@ -1,0 +1,77 @@
+[
+  {
+    "teamType": "Solo",
+    "entryFee": 20,
+    "prizePool": 500,
+    "matchTime": "2025-10-01T15:00:00Z",
+    "players": 16,
+    "maxPlayers": 64,
+    "roomId": "100001",
+    "roomPassword": "solo123",
+    "rules": [
+      "No cheating allowed.",
+      "Playfair competition only.",
+      "Submit results with screenshots."
+    ]
+  },
+  {
+    "teamType": "Duo",
+    "entryFee": 40,
+    "prizePool": 1000,
+    "matchTime": "2025-10-01T18:00:00Z",
+    "players": 24,
+    "maxPlayers": 96,
+    "roomId": "200002",
+    "roomPassword": "duo123",
+    "rules": [
+      "Teaming with others is prohibited.",
+      "Classic mode.",
+      "Winners must provide screens."
+    ]
+  },
+  {
+    "teamType": "Squad",
+    "entryFee": 75,
+    "prizePool": 2500,
+    "matchTime": "2025-10-02T17:00:00Z",
+    "players": 38,
+    "maxPlayers": 100,
+    "roomId": "300003",
+    "roomPassword": "squad123",
+    "rules": [
+      "No stream sniping.",
+      "Cheats are banned.",
+      "Show proof of results."
+    ]
+  },
+  {
+    "teamType": "Solo",
+    "entryFee": 10,
+    "prizePool": 300,
+    "matchTime": "2025-10-03T20:00:00Z",
+    "players": 10,
+    "maxPlayers": 50,
+    "roomId": "400004",
+    "roomPassword": "solo321",
+    "rules": [
+      "No unfair play.",
+      "All regions allowed.",
+      "Screen proof required."
+    ]
+  },
+  {
+    "teamType": "Duo",
+    "entryFee": 60,
+    "prizePool": 1800,
+    "matchTime": "2025-10-04T19:30:00Z",
+    "players": 28,
+    "maxPlayers": 90,
+    "roomId": "500005",
+    "roomPassword": "duo321",
+    "rules": [
+      "Team cannot exceed 2 members.",
+      "Classic mode only.",
+      "Proof of victory required."
+    ]
+  }
+]
