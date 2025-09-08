@@ -28,8 +28,8 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
     const joinedMatchesData = [];
 
     // Fetch joined matches details
-    for (const matchId of user.joinedMatches) {
-      const match = await Tournament.findById(matchId);
+    for (const jm of user.joinedMatches) {
+      const match = await Tournament.findById(jm.matchId);
       if (match) {
         const startTimeMs = new Date(match.matchTime).getTime();
         // Exclude matches started more than 1 hour ago
@@ -42,8 +42,8 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
             entryFee: match.entryFee,
             prizePool: match.prizePool,
             matchTime: match.matchTime,
-            roomId: match.roomId || '',
-            roomPassword: match.roomPassword || '',
+            roomId: jm.roomId || match.roomId || '',
+            roomPassword: jm.roomPassword || match.roomPassword || '',
             players: match.players,
             maxPlayers: match.maxPlayers,
             rules: match.rules || [],
@@ -71,12 +71,23 @@ router.post('/join-match', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Insufficient balance' });
     }
 
-    if (user.joinedMatches.includes(matchId)) {
+    if (user.joinedMatches.some(jm => jm.matchId.toString() === matchId)) {
       return res.status(400).json({ message: 'Already joined this match' });
     }
 
+    // Fetch match for startTime if needed
+    const match = await Tournament.findById(matchId);
+    const matchStartTime = match ? match.matchTime : null;
+
     user.balance -= entryFee;
-    user.joinedMatches.push(matchId);
+    user.joinedMatches.push({
+      matchId,
+      joinedAt: new Date(),
+      status: 'upcoming',
+      startTime: matchStartTime,
+      // roomId/roomPassword remain empty until admin fills
+    });
+
     await user.save();
 
     res.json({ success: true, balance: user.balance });
