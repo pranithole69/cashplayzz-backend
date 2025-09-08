@@ -25,7 +25,13 @@ router.get('/tournaments', verifyToken, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const joinedIds = user.joinedMatches.map(jm => jm.matchId.toString());
+    // Defensive check on joinedMatches
+    let joinedIds = [];
+    if (Array.isArray(user.joinedMatches)) {
+      joinedIds = user.joinedMatches
+        .map(jm => (jm && jm.matchId ? jm.matchId.toString() : ""))
+        .filter(id => id); // remove empty
+    }
 
     const tournamentsWithJoinState = tournaments.map(t => ({
       ...t.toObject(),
