@@ -2,25 +2,10 @@ const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema(
   {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    username: { type: String, required: true, unique: true, trim: true },
+    password: { type: String, required: true },
 
-    // 💰 Wallet and Stats
     balance: { type: Number, default: 0 },
     totalDeposits: { type: Number, default: 0 },
     totalWithdrawals: { type: Number, default: 0 },
@@ -28,8 +13,15 @@ const UserSchema = new mongoose.Schema(
     totalWin: { type: Number, default: 0 },
     totalLoss: { type: Number, default: 0 },
 
-    // New field to track joined tournaments
-    joinedMatches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' }],
+    // Track joined matches including room details and match start
+    joinedMatches: [{
+      matchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tournament' },
+      joinedAt: { type: Date, default: Date.now },
+      roomId: { type: String, default: '' },          // Filled by admin
+      roomPassword: { type: String, default: '' },    // Filled by admin
+      status: { type: String, default: 'upcoming' },  // upcoming, active, completed
+      startTime: { type: Date }
+    }],
 
     role: { type: String, default: 'user' },
   },
