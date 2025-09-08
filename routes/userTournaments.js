@@ -4,13 +4,11 @@ const { verifyToken } = require('../middleware/auth');
 const User = require('../models/User');
 const Tournament = require('../models/Tournament');
 
-// GET /api/user/profile - Get user profile info
+// Get user profile
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (err) {
     console.error('Profile error:', err);
@@ -18,19 +16,17 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/user/tournaments - Get all tournaments including joined boolean flag
+// Get all tournaments with joined flag
 router.get('/tournaments', verifyToken, async (req, res) => {
   try {
-    const tournaments = await Tournament.find({});
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Extract all matchIds the user has joined
+    const tournaments = await Tournament.find({});
     const joinedIds = (user.joinedMatches || [])
       .map(jm => (jm && jm.matchId ? jm.matchId.toString() : ""))
       .filter(id => id);
 
-    // Map tournaments adding joined flag based on user joinedMatches
     const tournamentsWithJoinState = tournaments.map(t => ({
       ...t.toObject(),
       joined: joinedIds.includes(t._id.toString()),
@@ -43,7 +39,7 @@ router.get('/tournaments', verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/user/joined-matches - Get all joined matches for user
+// Get joined matches for dashboard
 router.get('/joined-matches', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -53,7 +49,7 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
     const joinedMatchesData = [];
 
     for (const jm of user.joinedMatches) {
-      if (!jm || !jm.matchId) continue; // defensive check
+      if (!jm || !jm.matchId) continue;
       const match = await Tournament.findById(jm.matchId);
       if (match) {
         const startTimeMs = new Date(match.matchTime).getTime();
@@ -83,7 +79,7 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
   }
 });
 
-// POST /api/user/join-match - Join a tournament
+// Join a tournament
 router.post('/join-match', verifyToken, async (req, res) => {
   const { matchId, entryFee } = req.body;
 
@@ -95,7 +91,6 @@ router.post('/join-match', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Insufficient balance' });
     }
 
-    // Prevent duplicate join
     if (user.joinedMatches.some(jm => jm && jm.matchId && jm.matchId.toString() === matchId)) {
       return res.status(400).json({ message: 'Already joined this match' });
     }
@@ -103,10 +98,8 @@ router.post('/join-match', verifyToken, async (req, res) => {
     const match = await Tournament.findById(matchId);
     const matchStartTime = match ? match.matchTime : null;
 
-    // Deduct balance
     user.balance -= entryFee;
 
-    // Add joined match with correct matchId
     user.joinedMatches.push({
       matchId,
       joinedAt: new Date(),
