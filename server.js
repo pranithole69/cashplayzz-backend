@@ -26,9 +26,6 @@ app.get("/", (req, res) => {
 
 // ===== Import Routes =====
 // Import join route first
-const joinRoute = require("./routes/join");
-app.use("/api/user", joinRoute); // Register join route BEFORE user routes
-
 // Now register general user routes
 app.use("/api/user", require("./routes/user"));
 
