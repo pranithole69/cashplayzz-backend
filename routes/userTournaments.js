@@ -4,7 +4,7 @@ const { verifyToken } = require('../middleware/auth');
 const User = require('../models/User');
 const Tournament = require('../models/Tournament');
 
-// Get user profile
+// GET /api/user/profile - Get user profile info
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -16,13 +16,22 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Get all tournaments with joined flag
+// GET /api/user/tournaments - Get all tournaments filtered by mode with joined flag
 router.get('/tournaments', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const tournaments = await Tournament.find({});
+    const mode = req.query.mode;
+
+    // Adjust this filter to your Tournament schema field for mode or teamType
+    let filter = {};
+    if (mode) {
+      filter.mode = mode; // <-- change to 'teamType' if your DB uses that field instead
+    }
+
+    const tournaments = await Tournament.find(filter);
+
     const joinedIds = (user.joinedMatches || [])
       .map(jm => (jm && jm.matchId ? jm.matchId.toString() : ""))
       .filter(id => id);
@@ -39,7 +48,7 @@ router.get('/tournaments', verifyToken, async (req, res) => {
   }
 });
 
-// Get joined matches for dashboard
+// GET /api/user/joined-matches - Get joined matches details for dashboard
 router.get('/joined-matches', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -53,6 +62,7 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
       const match = await Tournament.findById(jm.matchId);
       if (match) {
         const startTimeMs = new Date(match.matchTime).getTime();
+        // Return only recent matches (e.g. started within last hour)
         if (now < startTimeMs + 3600000) {
           joinedMatchesData.push({
             id: match._id,
@@ -79,7 +89,7 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
   }
 });
 
-// Join a tournament
+// POST /api/user/join-match - Join a tournament
 router.post('/join-match', verifyToken, async (req, res) => {
   const { matchId, entryFee } = req.body;
 
