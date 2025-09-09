@@ -11,7 +11,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user); // send user data as JSON
+    res.json(user);
   } catch (err) {
     console.error('Profile error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -21,16 +21,25 @@ router.get('/profile', verifyToken, async (req, res) => {
 // GET /api/user/tournaments - Get all tournaments with joined boolean
 router.get('/tournaments', verifyToken, async (req, res) => {
   try {
-    const tournaments = await Tournament.find({});
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    const mode = req.query.mode;
+    const filter = mode ? { teamType: mode } : {};
+
+    const tournaments = await Tournament.find(filter);
+
+    // CRITICAL FIX: Handle both old string format and new object format
     let joinedIds = [];
     if (Array.isArray(user.joinedMatches)) {
-      joinedIds = user.joinedMatches
-        .map(jm => (jm && jm.matchId ? jm.matchId.toString() : ""))
-        .filter(id => id);
+      joinedIds = user.joinedMatches.map(jm => {
+        // Handle both old string format and new object format
+        if (typeof jm === 'string') return jm;
+        return jm && jm.matchId ? jm.matchId.toString() : null;
+      }).filter(id => id !== null);
     }
+
+    console.log('User joined match IDs:', joinedIds); // Debug log
 
     const tournamentsWithJoinState = tournaments.map(t => ({
       ...t.toObject(),
@@ -50,33 +59,41 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const now = Date.now();
+    console.log(`User has ${user.joinedMatches.length} joined matches`);
+
     const joinedMatchesData = [];
 
     for (const jm of user.joinedMatches) {
-      if (!jm || !jm.matchId) continue;  // Defensive check
-      const match = await Tournament.findById(jm.matchId);
+      let matchId;
+      
+      // Handle both old string format and new object format
+      if (typeof jm === 'string') {
+        matchId = jm;
+      } else if (jm && jm.matchId) {
+        matchId = jm.matchId;
+      } else {
+        continue;
+      }
+
+      const match = await Tournament.findById(matchId);
       if (match) {
-        const startTimeMs = new Date(match.matchTime).getTime();
-        if (now < startTimeMs + 3600000) {
-          joinedMatchesData.push({
-            id: match._id,
-            mode: match.mode,
-            teamType: match.teamType,
-            squadSize: match.squadSize,
-            entryFee: match.entryFee,
-            prizePool: match.prizePool,
-            matchTime: match.matchTime,
-            roomId: jm.roomId || match.roomId || '',
-            roomPassword: jm.roomPassword || match.roomPassword || '',
-            players: match.players,
-            maxPlayers: match.maxPlayers,
-            rules: match.rules || [],
-          });
-        }
+        joinedMatchesData.push({
+          id: match._id,
+          teamType: match.teamType,
+          squadSize: match.squadSize,
+          entryFee: match.entryFee,
+          prizePool: match.prizePool,
+          matchTime: match.matchTime,
+          roomId: (typeof jm === 'object' ? jm.roomId : '') || '',
+          roomPassword: (typeof jm === 'object' ? jm.roomPassword : '') || '',
+          players: match.players,
+          maxPlayers: match.maxPlayers,
+          rules: match.rules || [],
+        });
       }
     }
 
+    console.log(`Returning ${joinedMatchesData.length} joined matches`);
     res.json(joinedMatchesData);
   } catch (err) {
     console.error('Error fetching joined matches:', err);
@@ -84,9 +101,11 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
   }
 });
 
-// POST /api/user/join-match - Join a tournament
+// POST /api/user/join-match - Join a tournament (FIXED VERSION)
 router.post('/join-match', verifyToken, async (req, res) => {
   const { matchId, entryFee } = req.body;
+
+  console.log(`Join attempt: User ${req.user.id}, Match ${matchId}, Fee ${entryFee}`);
 
   try {
     const user = await User.findById(req.user.id);
@@ -96,27 +115,37 @@ router.post('/join-match', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Insufficient balance' });
     }
 
-    if (user.joinedMatches.some(jm => jm && jm.matchId && jm.matchId.toString() === matchId)) {
+    // Check if already joined (handle both old and new formats)
+    const alreadyJoined = user.joinedMatches.some(jm => {
+      if (typeof jm === 'string') return jm === matchId;
+      return jm && jm.matchId && jm.matchId.toString() === matchId;
+    });
+
+    if (alreadyJoined) {
       return res.status(400).json({ message: 'Already joined this match' });
     }
 
     const match = await Tournament.findById(matchId);
-    const matchStartTime = match ? match.matchTime : null;
+    if (!match) return res.status(404).json({ message: 'Tournament not found' });
 
+    // CRITICAL FIX: Store as proper object with schema structure
     user.balance -= entryFee;
     user.joinedMatches.push({
-      matchId,
+      matchId: matchId,
       joinedAt: new Date(),
       status: 'upcoming',
-      startTime: matchStartTime,
+      startTime: match.matchTime,
+      roomId: '',
+      roomPassword: '',
     });
 
-    await user.save();
+    const savedUser = await user.save();
+    console.log(`Successfully saved user with ${savedUser.joinedMatches.length} joined matches`);
 
-    res.json({ success: true, balance: user.balance });
+    res.json({ success: true, balance: savedUser.balance });
   } catch (err) {
     console.error('Error joining match:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error: ' + err.message });
   }
 });
 
