@@ -4,6 +4,7 @@ const { verifyToken } = require('../middleware/auth');
 const User = require('../models/User');
 const Tournament = require('../models/Tournament');
 
+// Get user profile
 router.get('/profile', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -15,6 +16,7 @@ router.get('/profile', verifyToken, async (req, res) => {
   }
 });
 
+// Get tournaments with joined flag
 router.get('/tournaments', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -39,6 +41,7 @@ router.get('/tournaments', verifyToken, async (req, res) => {
   }
 });
 
+// Get joined matches for dashboard
 router.get('/joined-matches', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -76,6 +79,7 @@ router.get('/joined-matches', verifyToken, async (req, res) => {
   }
 });
 
+// Join a tournament and deduct balance
 router.post('/join-match', verifyToken, async (req, res) => {
   const { entryFee, matchId } = req.body;
   try {
