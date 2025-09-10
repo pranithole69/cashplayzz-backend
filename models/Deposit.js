@@ -1,28 +1,14 @@
-// server/models/Deposit.js
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
-const depositSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  amount: {
-    type: Number,
-    required: true,
-  },
-  transactionId: {
-    type: String,
-    required: true,
-  },
-  senderName: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+const DepositSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  amount: { type: Number, required: true },
+  paymentMethod: { type: String, required: true },
+  paymentDetails: { type: Object },
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  adminNotes: { type: String },
+  processedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  processedAt: { type: Date },
+}, { timestamps: true });
 
-module.exports = mongoose.model("Deposit", depositSchema);
+export default mongoose.models.Deposit || mongoose.model('Deposit', DepositSchema);
