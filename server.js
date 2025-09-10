@@ -10,7 +10,7 @@ dotenv.config();
 
 const app = express();
 
-// ===== CORS Configuration =====
+// CORS Configuration
 app.use(cors({
   origin: [
     "https://cashplayzz.vercel.app",
@@ -24,67 +24,141 @@ app.use(cors({
 
 app.use(express.json());
 
-// ===== REQUEST LOGGING =====
+// Request logging
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  if (req.body && Object.keys(req.body).length > 0) {
-    const logBody = { ...req.body };
-    if (logBody.password) logBody.password = '[HIDDEN]';
-    console.log('Body:', JSON.stringify(logBody));
-  }
   next();
 });
 
-// ===== DIRECT ADMIN LOGIN - FIRST ROUTE =====
+// Health check
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "CashPlayzz Backend Running",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// DIRECT ADMIN LOGIN ROUTE
 const User = require('./models/User');
 
 app.post("/api/admin/login", async (req, res) => {
-  console.log('🔥 ADMIN LOGIN ROUTE HIT!');
-  console.log('Method:', req.method);
-  console.log('URL:', req.originalUrl);
-  console.log('Body:', req.body);
+  console.log('Admin Login Route Hit!');
   
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      console.log('❌ Missing credentials');
       return res.status(400).json({ 
         success: false, 
-        message: 'Username and password are required' 
+        message: 'Username and password are required'  // ← FIXED: Properly closed string
       });
     }
 
-    console.log('🔍 Looking for user:', username);
-    
-    // Find admin user
     const user = await User.findOne({ 
       $or: [{ email: username }, { username: username }]
     });
 
-    console.log('👤 User found:', user ? `${user.email} (${user.role})` : 'Not found');
-
     if (!user) {
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid credentials' 
+        message: 'Invalid credentials'  // ← FIXED: Properly closed string
       });
     }
 
     if (user.role !== 'admin') {
-      console.log('❌ User is not admin, role:', user.role);
       return res.status(403).json({ 
         success: false, 
-        message: 'Access denied. Admin only.' 
+        message: 'Access denied. Admin only.'  // ← FIXED: Properly closed string
       });
     }
 
-    // Check password
-    console.log('🔑 Checking password...');
     const isValid = await bcrypt.compare(password, user.password);
-    console.log('🔑 Password valid:', isValid);
 
     if (!isValid) {
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid credentials
+        message: 'Invalid credentials'  // ← FIXED: Properly closed string
+      });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        role: user.role, 
+        email: user.email,
+        username: user.username
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log('Login successful for:', user.email);
+    
+    return res.json({
+      success: true,
+      token,
+      user: { 
+        id: user._id, 
+        username: user.username, 
+        email: user.email, 
+        role: user.role 
+      },
+      message: 'Admin login successful'  // ← FIXED: Properly closed string
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error: ' + error.message  // ← FIXED: Properly closed string
+    });
+  }
+});
+
+// Load other routes
+try {
+  const userTournamentsRouter = require('./routes/userTournaments');
+  
+  app.use("/api/user", require("./routes/user"));
+  app.use("/api/auth", require("./routes/auth"));
+  app.use("/api/admin", require("./routes/admin"));
+  app.use("/api/deposit", require("./routes/deposit"));
+  app.use("/api/withdraw", require("./routes/withdraw"));
+  app.use("/api/test", require("./routes/test"));
+  app.use('/api', userTournamentsRouter);
+  
+} catch (error) {
+  console.error('Error loading routes:', error.message);
+}
+
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB Connected'))
+.catch((err) => console.error('MongoDB connection error:', err));
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Global Error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal Server Error'  // ← FIXED: Properly closed string
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.method} ${req.originalUrl} not found`  // ← FIXED: Properly closed string
+  });
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
