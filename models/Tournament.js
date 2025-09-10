@@ -1,16 +1,17 @@
-import mongoose from 'mongoose';
+// src/models/Tournament.js
+
+const mongoose = require('mongoose');
 
 const TournamentSchema = new mongoose.Schema({
   teamType: { type: String, required: true },
-  gameMode: { type: String, required: true },
   entryFee: { type: Number, required: true },
-  maxPlayers: { type: Number, required: true },
   prizePool: { type: Number, required: true },
+  matchTime: { type: Date, required: true },
+  players: { type: Number, default: 0 },
+  maxPlayers: { type: Number, required: true },
   roomId: { type: String },
   roomPassword: { type: String },
-  matchTime: { type: Date, required: true },
-  status: { type: String, enum: ['upcoming', 'live', 'completed'], default: 'upcoming' },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-}, { timestamps: true });
+  rules: [{ type: String }],
+});
 
-export default mongoose.models.Tournament || mongoose.model('Tournament', TournamentSchema);
+module.exports = mongoose.model('Tournament', TournamentSchema);
