@@ -1,4 +1,4 @@
-// middleware/auth.js
+// middleware/auth.js - REPLACE ENTIRE FILE
 
 const jwt = require("jsonwebtoken");
 
@@ -22,7 +22,7 @@ const verifyToken = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  console.log("ROLE COMING FROM TOKEN:", req.user.role); // 👈 This line is added
+  console.log("ROLE COMING FROM TOKEN:", req.user.role);
 
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied. Admins only." });
@@ -31,4 +31,7 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { verifyToken, isAdmin };
+// Combined admin auth middleware
+const adminAuth = [verifyToken, isAdmin];
+
+module.exports = { verifyToken, isAdmin, adminAuth };
